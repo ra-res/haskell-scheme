@@ -1,0 +1,6 @@
+dist-newstyle
+*.save0
+main
+main.hi
+main.o
+*.cabal
