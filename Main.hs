@@ -48,11 +48,6 @@ parseFloat = do
     let atom = (x ++ "." ++ y)
     return $ Float $ read atom
 
-readExpr :: String -> String
-readExpr input = case parse parseExpr "lisp" input of 
-    Left err -> "No match : " ++ show err
-    Right val -> "Found value"
-
 parseList :: Parser LispVal
 parseList = liftM List $ sepBy parseExpr spaces
 
@@ -80,8 +75,26 @@ parseExpr = parseAtom
                 char ')'
                 return x
 
+showVal :: LispVal -> String
+showVal (Atom name) = name
+showVal (String contents) = "\"" ++ contents ++ "\""
+showVal (Number contents) = show contents
+showVal (Float contents) = show contents
+showVal (Bool True) = "#t"
+showVal (Bool False) = "#k"
+showVal (List contents) = "(" ++ unwordsList contents ++ ")"
+showVal (DottedList head tail) = "(" ++ unwordsList head ++ showVal tail ++ ")"
+
+unwordsList :: [LispVal] -> String
+unwordsList = unwords . map showVal
+
+instance Show LispVal where show = showVal
+readExpr :: String -> String
+readExpr input = case parse parseExpr "lisp" input of 
+    Left err -> "No match : " ++ show err
+    Right val -> "Found " ++ show val
 
 main :: IO ()
 main = do
-    (expr:_) <- getArgs
-    putStrLn (readExpr expr)
+    args <- getArgs
+    putStrLn (readExpr (args !! 0))
